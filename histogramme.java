@@ -9,21 +9,63 @@ import fr.unistra.pelican.algorithms.visualisation.Viewer2D;
 public class histogramme {
 	
 	public static void main(String[] args) throws IOException{
-		Image img = ImageLoader.exec("C:\\Users\\bettse2008\\Downloads\\motos\\motos\\000.jpg");
-		Viewer2D.exec(img);
-		Viewer2D.exec(median(img));
-		int seuile = 240;
-		Image msk = buildBackgroundMask(img, seuile);
+		Image img1 = ImageLoader.exec("C:\\Users\\bettse2008\\Downloads\\motos\\motos\\000.jpg");
+		Image img2 = ImageLoader.exec("C:\\Users\\bettse2008\\Downloads\\motos\\motos\\025.jpg");
 		
-		int R = 0;
-		double[] r= histogramme(img, R, msk);
-		int G = 1;
-		double[] g= histogramme(img, G, msk);
-		int B = 0;
-		double[] b= histogramme(img, B, msk);
-				
+		
+		
+		int seuile = 240;
+		Image msk1 = buildBackgroundMask(img1, seuile);
+		Image msk2 = buildBackgroundMask(img2, seuile);
+		//Viewer2D.exec(msk);
+		//Viewer2D.exec(img1);
+		//Viewer2D.exec(median(img1));
+		
+		int R = 0,G=1,B=2;
+		double[] r1= normalisation(discrétisationPar2(histogramme(img1, R, msk1)),img1);
+		double[] g1=  normalisation(discrétisationPar2(histogramme(img1, G, msk1)),img1);
+		double[] b1= normalisation(discrétisationPar2(histogramme(img1, B, msk1)),img1);
+
+		double[] r2= normalisation(discrétisationPar2(histogramme(img2, R, msk2)),img2);
+		double[] g2=  normalisation(discrétisationPar2(histogramme(img2, G, msk2)),img2);
+		double[] b2= normalisation(discrétisationPar2(histogramme(img2, B, msk2)),img2);
+		
 		
 	}
+	//DESCRETISATION DE L'IMAGE 
+	public static double[] discrétisationPar2(double [] histo) {
+	     
+	     double[]discrét = new double[histo.length/2];
+	     for(int i=0,j=0;i<histo.length;i+=2,j+=1) {
+	    	 discrét[j]=histo[i]+histo[i+1];
+	    	 
+	     }
+		/*
+		 * try { HistogramTools.plotHistogram(discrét); } catch (IOException e) { //
+		 * TODO Auto-generated catch block e.printStackTrace(); }
+		 */
+		return discrét; 
+	}
+	
+	//NORMALISATION DE L'IMAGE
+	public static double[] normalisation(double [] discrét, Image img) {
+		int largeur = img.getXDim();
+	    int hauteur = img.getYDim();
+		double [] normalis = new double[discrét.length];
+		for(int i=0,j=0;i<discrét.length;i++,j++) {
+			normalis[j]= (discrét[i]/(largeur*hauteur)) *100;
+		}
+		 try {
+				HistogramTools.plotHistogram(normalis);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		return normalis;
+		
+	}
+	
+	
 	//HISTOGRAMME
 	public static double[] histogramme(Image img, int canal, Image mask) {
         int largeur = img.getXDim();
@@ -38,17 +80,16 @@ public class histogramme {
 
         for(int x = 0; x < largeur; x++) {
             for(int y = 0; y < hauteur; y++) {
-                int valeur = img.getPixelXYBByte(x, y, 0);
-                int m = img.getPixelXYBByte(x, y, 0);
+                int valeur = img.getPixelXYBByte(x, y, canal);
+                int m = mask.getPixelXYBByte(x, y, 0);
                 		if(m==255)
                 		histo[valeur] += 1;
             }
         }
-        try {
-            HistogramTools.plotHistogram(histo);
-        } catch (IOException e) {
-            System.err.println("Erreur lors de l'affichage : " + e);
-        }
+		/*
+		 * try { HistogramTools.plotHistogram(histo); } catch (IOException e) {
+		 * System.err.println("Erreur lors de l'affichage : " + e); }
+		 */
 
         return histo;
     }
