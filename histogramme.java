@@ -30,8 +30,31 @@ public class histogramme {
 		double[] g2=  normalisation(discrétisationPar2(histogramme(img2, G, msk2)),img2);
 		double[] b2= normalisation(discrétisationPar2(histogramme(img2, B, msk2)),img2);
 		
-		
 	}
+	//SIMILARITE
+	public static void distanceEuclidienne(double[] normalis, double[] normalis2, Image img1, Image img2) {
+		/*
+		 * int largeur1 = img1.getXDim(); int hauteur1 = img1.getYDim();
+		 * 
+		 * for(int x = 0; x < largeur1; x++) { for(int y = 0; y < hauteur1; y++) {
+		 * return Math.sqrt( Math.pow( x2 - x1,2) + Math.pow(y2 - y1,2)); } }
+		 */
+		
+	    int result;
+		for(int i=0,j=0;i<normalis.length;i++,j++) {
+			result = (int) ( Math.pow((normalis[j] - normalis2[j]),2));
+			result=+result;
+			
+			System.out.println(result);
+		}result = (int) Math.sqrt(result);
+		 try {
+				HistogramTools.plotHistogram(normalis);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
 	//DESCRETISATION DE L'IMAGE 
 	public static double[] discrétisationPar2(double [] histo) {
 	     
