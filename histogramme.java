@@ -1,5 +1,8 @@
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import fr.unistra.pelican.ByteImage;
 import fr.unistra.pelican.Image;
@@ -9,50 +12,71 @@ import fr.unistra.pelican.algorithms.visualisation.Viewer2D;
 public class histogramme {
 	
 	public static void main(String[] args) throws IOException{
-		Image img1 = ImageLoader.exec("C:\\Users\\bettse2008\\Downloads\\motos\\motos\\000.jpg");
-		Image img2 = ImageLoader.exec("C:\\Users\\bettse2008\\Downloads\\motos\\motos\\025.jpg");
+		String path="C:\\Users\\bettse2008\\Downloads\\motos\\motos\\000.jpg";
+		Image img1 = ImageLoader.exec(path);
+		img1.setName(path);
 		
+		//Image img2 = ImageLoader.exec("C:\\Users\\bettse2008\\Downloads\\motos\\motos\\025.jpg");
 		
+		TreeMap<Double, String> tm = new TreeMap<>();
 		
 		int seuile = 240;
 		Image msk1 = buildBackgroundMask(img1, seuile);
-		Image msk2 = buildBackgroundMask(img2, seuile);
+		median(img1);
 		//Viewer2D.exec(msk);
 		//Viewer2D.exec(img1);
 		//Viewer2D.exec(median(img1));
-		
 		int R = 0,G=1,B=2;
 		double[] r1= normalisation(discrétisationPar2(histogramme(img1, R, msk1)),img1);
 		double[] g1=  normalisation(discrétisationPar2(histogramme(img1, G, msk1)),img1);
 		double[] b1= normalisation(discrétisationPar2(histogramme(img1, B, msk1)),img1);
-
-		double[] r2= normalisation(discrétisationPar2(histogramme(img2, R, msk2)),img2);
-		double[] g2=  normalisation(discrétisationPar2(histogramme(img2, G, msk2)),img2);
-		double[] b2= normalisation(discrétisationPar2(histogramme(img2, B, msk2)),img2);
 		
-	}
-	//SIMILARITE
-	public static void distanceEuclidienne(double[] normalis, double[] normalis2, Image img1, Image img2) {
-		/*
-		 * int largeur1 = img1.getXDim(); int hauteur1 = img1.getYDim();
-		 * 
-		 * for(int x = 0; x < largeur1; x++) { for(int y = 0; y < hauteur1; y++) {
-		 * return Math.sqrt( Math.pow( x2 - x1,2) + Math.pow(y2 - y1,2)); } }
-		 */
-		
-	    int result;
-		for(int i=0,j=0;i<normalis.length;i++,j++) {
-			result = (int) ( Math.pow((normalis[j] - normalis2[j]),2));
-			result=+result;
+		File dossier = new File("C:\\Users\\bettse2008\\Downloads\\motos\\motos");
+		File[] ToutesLesMotos = dossier.listFiles();
+		for(int i=0; i< ToutesLesMotos.length; i++) {
+			Image im = ImageLoader.exec(ToutesLesMotos[i].getAbsolutePath());
+			im.setName(ToutesLesMotos[i].getAbsolutePath());
+		if(im.getName().equals(img1.getName())) {
+			System.err.println("error");
+		}else {
+			median(im);
+			Image msk2 = buildBackgroundMask(im, seuile);
+			double[] r2= normalisation(discrétisationPar2(histogramme(im, R, msk2)),im);
+			double[] g2=  normalisation(discrétisationPar2(histogramme(im, G, msk2)),im);
+			double[] b2= normalisation(discrétisationPar2(histogramme(im, B, msk2)),im);
 			
-			System.out.println(result);
-		}result = (int) Math.sqrt(result);
-		 try {
-				HistogramTools.plotHistogram(normalis);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			double distance = distanceEuclidienne(g1, g2) + 
+					distanceEuclidienne(r1, r2) + distanceEuclidienne(b1, b2);
+			
+			tm.put( distance, im.getName());
+		}	
+		}
+		int k=0;
+        for(Entry<Double, String> e:tm.entrySet()) {
+            System.out.println(e.getValue() + " => "+e.getKey());
+            Viewer2D.exec(ImageLoader.exec(e.getValue()));
+
+            k++;
+
+            if(k>10) break;
+        }
+
+        System.out.println(tm);
+	}
+	
+
+
+
+	//SIMILARITE
+	public static double distanceEuclidienne(double[] histo1, double[] histo2) {
+		
+		double distance = 0;
+		for (int j = 0; j < histo1.length; ++j) {
+			distance += Math.sqrt(Math.pow(histo1[j] - histo2[j], 2));
+		}
+
+
+		return distance;
 	}
 	
 	//DESCRETISATION DE L'IMAGE 
